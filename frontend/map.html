@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Map | Namma Chennai Tracker</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <!-- Leaflet.markercluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css">
+    <style>
+        #map { height: calc(100vh - 120px); width: 100%; border-radius: 1rem; margin-top: 1rem;}
+        .leaflet-container { background: var(--primary-bg); }
+        .popup-card { color: #333; min-width: 200px; padding: 0.5rem; }
+        .popup-card h4 { margin: 0 0 0.5rem 0; font-family: 'Inter', sans-serif; }
+        .popup-card p { margin: 0; font-size: 0.9rem; }
+        .popup-card button { width: 100%; margin-top: 1rem; cursor: pointer; border: none; background: #2563eb; color: white; padding: 0.5rem; border-radius: 0.25rem; font-weight: bold;}
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container nav-content">
+            <div class="logo-group">
+                <h1>Namma Chennai Tracker</h1>
+                <p>நம்ம சென்னை ட்ராக்கர்</p>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Home / இல்லம்</a>
+                <a href="parties.html">Parties / கட்சிகள்</a>
+                <a href="map.html" class="active">Map / வரைபடம்</a>
+                <button id="lang-toggle" class="glass">EN / த</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div id="map" class="glass"></div>
+    </main>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src="js/map.js"></script>
+</body>
+</html>

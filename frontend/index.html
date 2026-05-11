@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Namma Chennai Tracker | நம்ம சென்னை ட்ராக்கர்</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="assets/logos/favicon.ico">
+</head>
+<body>
+    <nav>
+        <div class="container nav-content">
+            <div class="logo-group">
+                <h1 id="site-title">Namma Chennai Tracker</h1>
+                <p id="site-subtitle">நம்ம சென்னை ட்ராக்கர்</p>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="active">Home / இல்லம்</a>
+                <a href="parties.html">Parties / கட்சிகள்</a>
+                <a href="map.html">Map / வரைபடம்</a>
+                <button id="lang-toggle" class="glass">EN / த</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="ticker-banner">
+        <div class="ticker-text" id="ticker-content">
+            Loading active disruptions... | நேரடி தகவல்கள் ஏற்றப்படுகின்றன...
+        </div>
+    </div>
+
+    <main class="container">
+        <section class="hero">
+            <h2 id="hero-headline">Know Before You Go</h2>
+            <p id="hero-subtext">Stay updated on political rallies and strikes in Chennai. Today is <span id="current-date">...</span></p>
+            <div class="stats-bar">
+                <div class="stat-card glass">
+                    <span class="stat-value" id="stat-total-events">0</span>
+                    <span class="stat-label">Total Events Today</span>
+                </div>
+                <div class="stat-card glass">
+                    <span class="stat-value" id="stat-parties-active">0</span>
+                    <span class="stat-label">Parties Active</span>
+                </div>
+                <div class="stat-card glass">
+                    <span class="stat-value" id="stat-areas-affected">0</span>
+                    <span class="stat-label">Areas Affected</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="events-section">
+            <div class="filter-bar glass" style="padding: 1rem; margin-bottom: 2rem; display: flex; gap: 1rem; align-items: center;">
+                <span style="font-weight: 600;">Filter by:</span>
+                <select id="filter-party" class="glass-select">
+                    <option value="all">All Parties</option>
+                </select>
+                <select id="filter-area" class="glass-select">
+                    <option value="all">All Areas</option>
+                </select>
+            </div>
+
+            <div class="events-grid" id="events-container">
+                <!-- Event cards will be injected here -->
+                <div class="event-card glass" style="text-align: center; padding: 3rem;">
+                    <p>Loading today's events...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Disclaimer: Data aggregated from public sources. Not affiliated with any political party.</p>
+            <p>&copy; 2026 Namma Chennai Tracker</p>
+            <p style="margin-top: 1rem; font-size: 0.8rem;">Last updated: <span id="last-updated-timestamp">Just now</span></p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/ticker.js"></script>
+</body>
+</html>

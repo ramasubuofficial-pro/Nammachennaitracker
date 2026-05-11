@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Political Parties | Namma Chennai Tracker</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <div class="container nav-content">
+            <div class="logo-group">
+                <h1>Namma Chennai Tracker</h1>
+                <p>நம்ம சென்னை ட்ராக்கர்</p>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Home / இல்லம்</a>
+                <a href="parties.html" class="active">Parties / கட்சிகள்</a>
+                <a href="map.html">Map / வரைபடம்</a>
+                <button id="lang-toggle" class="glass">EN / த</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container" style="padding-top: 4rem;">
+        <header style="margin-bottom: 3rem; text-align: center;">
+            <h2 style="font-size: 2.5rem;">Political Parties</h2>
+            <p style="color: var(--text-muted);">Major parties active in the Chennai region.</p>
+        </header>
+
+        <div class="parties-grid" id="parties-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem;">
+            <!-- Party cards will be injected here -->
+            <div class="glass" style="padding: 2rem; text-align: center;">Loading parties...</div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Disclaimer: Data aggregated from public sources. Not affiliated with any political party.</p>
+            <p>&copy; 2026 Namma Chennai Tracker</p>
+        </div>
+    </footer>
+
+    <script>
+        const API_BASE = "http://localhost:8000/api";
+        const state = {
+            language: 'en'
+        };
+
+        const dom = {
+            langToggle: document.getElementById('lang-toggle'),
+            container: document.getElementById('parties-container')
+        };
+
+        dom.langToggle.addEventListener('click', () => {
+            state.language = state.language === 'en' ? 'ta' : 'en';
+            dom.langToggle.textContent = state.language === 'en' ? 'EN / த' : 'த / EN';
+            fetchParties();
+        });
+
+        async function fetchParties() {
+            try {
+                const res = await fetch(`${API_BASE}/parties`);
+                const parties = await res.json();
+                
+                if (parties.length === 0) {
+                    dom.container.innerHTML = `<p>No parties found.</p>`;
+                    return;
+                }
+
+                dom.container.innerHTML = parties.map(party => `
+                    <div class="glass" style="padding: 2rem; display: flex; flex-direction: column; align-items: center; text-align: center; border-top: 4px solid ${party.color};">
+                        <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.05); border-radius: 50%; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; font-size: 2rem; border: 1px solid var(--glass-border);">
+                            🏛️
+                        </div>
+                        <h3 style="margin-bottom: 0.25rem;">${state.language === 'en' ? party.name : party.name_tamil}</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">${state.language === 'en' ? party.name_tamil : party.name}</p>
+                        <div style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                            <span style="display: block; font-size: 0.8rem; color: var(--text-muted);">
+                                ${state.language === 'en' ? "Today's Events" : "இன்றைய நிகழ்வுகள்"}
+                            </span>
+                            <span style="font-size: 1.5rem; font-weight: bold; color: ${party.color};">${party.event_count || 0}</span>
+                        </div>
+                        <a href="${party.official_url || '#'}" target="_blank" class="glass" style="padding: 0.6rem 1rem; text-decoration: none; color: white; width: 100%; font-weight: 600;">
+                            ${state.language === 'en' ? 'Official Page' : 'அதிகாரப்பூர்வ பக்கம்'}
+                        </a>
+                    </div>
+                `).join('');
+            } catch (err) {
+                dom.container.innerHTML = `<p style="color: var(--danger);">Unable to connect to API.</p>`;
+            }
+        }
+        fetchParties();
+    </script>
+</body>
+</html>
