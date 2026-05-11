@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 from typing import List
 
-from .database import create_db_and_tables, get_session
+from .database import create_db_and_tables, get_session, engine
 from .models import Party, Event
 
 from .routes import events, parties
