@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8000/api";
+const API_BASE = "https://nammachennaitracker.onrender.com/api";
 
 async function fetchEventDetails() {
     const params = new URLSearchParams(window.location.search);

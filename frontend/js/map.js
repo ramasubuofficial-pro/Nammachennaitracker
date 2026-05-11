@@ -14,7 +14,7 @@ async function loadMarkers() {
     const targetId = params.get('id');
 
     try {
-        const response = await fetch('http://localhost:8000/api/events/today');
+        const response = await fetch('https://nammachennaitracker.onrender.com/api/events/today');
         const events = await response.json();
         
         events.forEach(event => {
