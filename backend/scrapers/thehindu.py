@@ -39,7 +39,7 @@ async def scrape_thehindu_tamil() -> List[Dict]:
                     areas = ["Velachery", "Adyar", "Mylapore", "Saidapet", "Chepauk", "Triplicane"]
                     found_area = next((a for a in areas if a.lower() in text.lower()), "Chennai")
                     
-                    party_keywords = {"திமுக": "DMK", "அதிமுக": "AIADMK", "பாஜக": "BJP"}
+                    party_keywords = {"திமுக": "DMK", "அதிமுக": "AIADMK", "பாஜக": "BJP", "தவெக": "TVK", "விசிக": "VCK"}
                     found_party = next((v for k, v in party_keywords.items() if k in text), "NTK")
                     
                     event = {
