@@ -17,21 +17,22 @@ async def scrape_thehindu_tamil() -> List[Dict]:
     events = []
     
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(follow_redirects=True) as client:
             response = await client.get(THEHINDU_TAMIL_URL, headers=headers)
             soup = BeautifulSoup(response.text, "html.parser")
             
-            # Search for election-specific news
+            # Updated selectors based on site redesign
+            articles = soup.find_all("a", attrs={"aria-label": "headline"}) or []
+            
             keywords = ["தேர்தல்", "கூட்டம்", "meeting", "rally", "campaign", "தவெக", "TVK", "விஜய்", "Vijay"]
             
-            # The Hindu Tamil structure (simplified)
-            articles = soup.find_all("div", class_="media-body") or []
-            
             for art in articles:
-                title_el = art.find("a")
+                title_el = art.find("h3")
                 if not title_el: continue
                 text = title_el.get_text()
-                link = title_el["href"]
+                link = art["href"]
+                if not link.startswith("http"):
+                    link = f"https://www.hindutamil.in{link}"
                 
                 if any(k in text for k in keywords):
                     # Guess some details for the MVP
@@ -40,7 +41,7 @@ async def scrape_thehindu_tamil() -> List[Dict]:
                     found_area = next((a for a in areas if a.lower() in text.lower()), "Chennai")
                     
                     party_keywords = {"திமுக": "DMK", "அதிமுக": "AIADMK", "பாஜக": "BJP", "தவெக": "TVK", "விசிக": "VCK"}
-                    found_party = next((v for k, v in party_keywords.items() if k in text), "NTK")
+                    found_party = next((v for k, v in party_keywords.items() if k in text), "Other")
                     
                     event = {
                         "party_name": found_party,
@@ -52,7 +53,7 @@ async def scrape_thehindu_tamil() -> List[Dict]:
                         "location_tamil": found_area, 
                         "start_time": datetime.utcnow() + timedelta(hours=3),
                         "end_time": datetime.utcnow() + timedelta(hours=5),
-                        "status": "confirmed", # Or parse "confirmed" / "unverified"
+                        "status": "confirmed",
                         "source_url": link,
                         "source_name": "The Hindu Tamil"
                     }

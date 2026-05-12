@@ -15,25 +15,41 @@ async def scrape_dinamalar() -> List[Dict]:
     }
     
     events = []
+    # Updated URL for latest news
+    URL = "https://www.dinamalar.com/news/latest-tamil-news"
     
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(DINAMALAR_CHENNAI_URL, headers=headers)
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            response = await client.get(URL, headers=headers)
             soup = BeautifulSoup(response.text, "html.parser")
             
-            # Simple keyword matching for demo/MVP
+            # Find the Next.js data script
+            next_data_script = soup.find("script", id="__NEXT_DATA__")
+            if not next_data_script:
+                print("Dinamalar: __NEXT_DATA__ script not found.")
+                return []
+            
+            import json
+            data = json.loads(next_data_script.string)
+            
+            # Navigate to the news list in the JSON structure
+            # Based on subagent findings: props.pageProps.responseListingMain.newlist.data
+            try:
+                articles = data["props"]["pageProps"]["responseListingMain"]["newlist"]["data"]
+            except KeyError:
+                print("Dinamalar: Could not find news list in JSON.")
+                return []
+            
             keywords = ["கூட்டம்", "பேரணி", "meeting", "rally", "தடை", "traffic", "தவெக", "TVK", "விஜய்", "Vijay"]
-            articles = soup.find_all("div", class_="news_main_txt") or []
             
             for art in articles:
-                text = art.get_text()
-                link = art.find("a")["href"] if art.find("a") else DINAMALAR_CHENNAI_URL
+                title = art.get("newstitle", "")
+                desc = art.get("newsdescription", "")
+                slug = art.get("slug", "")
+                text = f"{title} {desc}"
                 
                 if any(k in text for k in keywords):
-                    # In a real app, we'd use NLP or LLM to extract details
-                    # For MVP, we'll create a semi-simulated event from the news headline
-                    location = "Chennai" # Default
-                    # Look for common Chennai areas in text (simplified)
+                    # Extract details
                     areas = ["T. Nagar", "Anna Nagar", "Adyar", "Central", "Egmore", "Guindy", "Purasawalkam"]
                     found_area = next((a for a in areas if a.lower() in text.lower()), "Chennai")
                     
@@ -42,20 +58,19 @@ async def scrape_dinamalar() -> List[Dict]:
                     
                     event = {
                         "party_name": found_party,
-                        "party_color": "#808080", # Default gray
+                        "party_color": "#808080",
                         "event_type": "meeting" if "கூட்டம்" in text else "rally",
-                        "title": text[:100],
-                        "title_tamil": text[:100],
+                        "title": title[:100],
+                        "title_tamil": title[:100],
                         "location_name": found_area,
                         "location_tamil": found_area, 
                         "start_time": datetime.utcnow() + timedelta(hours=4),
                         "end_time": datetime.utcnow() + timedelta(hours=6),
                         "status": "unverified",
-                        "source_url": link,
+                        "source_url": f"https://www.dinamalar.com/news/{slug}" if slug else URL,
                         "source_name": "Dinamalar"
                     }
                     
-                    # Geocode the area
                     coords = await geocode_location(found_area)
                     if coords:
                         event["latitude"], event["longitude"] = coords

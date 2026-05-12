@@ -60,3 +60,9 @@ async def get_ticker(session: Session = Depends(get_session)):
 @app.get("/")
 async def root():
     return {"message": "Welcome to Namma Chennai Tracker API"}
+
+from .scrapers.scheduler import run_scrapers
+@app.get("/api/admin/scrape")
+async def trigger_scrape():
+    await run_scrapers()
+    return {"message": "Scrape triggered manually. Check home page for updates."}
