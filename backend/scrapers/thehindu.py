@@ -22,7 +22,7 @@ async def scrape_thehindu_tamil() -> List[Dict]:
             soup = BeautifulSoup(response.text, "html.parser")
             
             # Search for election-specific news
-            keywords = ["தேர்தல்", "கூட்டம்", "meeting", "rally", "campaign"]
+            keywords = ["தேர்தல்", "கூட்டம்", "meeting", "rally", "campaign", "தவெக", "TVK", "விஜய்", "Vijay"]
             
             # The Hindu Tamil structure (simplified)
             articles = soup.find_all("div", class_="media-body") or []

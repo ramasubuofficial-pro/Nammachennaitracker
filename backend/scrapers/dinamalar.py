@@ -22,7 +22,7 @@ async def scrape_dinamalar() -> List[Dict]:
             soup = BeautifulSoup(response.text, "html.parser")
             
             # Simple keyword matching for demo/MVP
-            keywords = ["கூட்டம்", "பேரணி", "meeting", "rally", "தடை", "traffic"]
+            keywords = ["கூட்டம்", "பேரணி", "meeting", "rally", "தடை", "traffic", "தவெக", "TVK", "விஜய்", "Vijay"]
             articles = soup.find_all("div", class_="news_main_txt") or []
             
             for art in articles:
