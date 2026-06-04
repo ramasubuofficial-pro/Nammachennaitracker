@@ -34,6 +34,14 @@ async def lifespan(app: FastAPI):
                 session.add(Party(**p_data))
             session.commit()
             print("Auto-seeded parties on startup.")
+            
+        # Clean up legacy non-party events from the database
+        legacy_events = session.exec(select(Event).where(Event.party_name == "Other")).all()
+        if legacy_events:
+            for ev in legacy_events:
+                session.delete(ev)
+            session.commit()
+            print(f"Cleaned up {len(legacy_events)} legacy non-party events from database.")
 
     # Start scheduler in background
     asyncio.create_task(scheduler())
