@@ -25,7 +25,7 @@ async def scrape_thehindu_tamil() -> List[Dict]:
             articles = soup.find_all("a", attrs={"aria-label": "headline"}) or []
             
             # Keywords focusing on traffic, rallies, meetings, and campaigns to avoid traffic
-            keywords = ["கூட்டம்", "பேரணி", "meeting", "rally", "தடை", "traffic", "campaign", "strike", "மறியல்", "தேரோட்டம்", "ஊர்வலம்"]
+            keywords = ["கூட்டம்", "பேரணி", "meeting", "rally", "தடை", "traffic", "campaign", "strike", "மறியல்"]
             
             # Chennai indicators to filter out non-Chennai articles from the general Tamilnadu page
             chennai_indicators = ["chennai", "சென்ன", "velachery", "adyar", "mylapore", "saidapet", "chepauk", "triplicane", "t. nagar", "anna nagar", "central", "egmore", "guindy", "purasawalkam", "tambaram", "chromepet", "nungambakkam", "royapettah"]
@@ -81,6 +81,8 @@ async def scrape_thehindu_tamil() -> List[Dict]:
                             break
                     
                     found_party = next((party_keywords[k] for k in sorted_party_keys if k in text), "Other")
+                    if found_party == "Other":
+                        continue
                     
                     event = {
                         "party_name": found_party,

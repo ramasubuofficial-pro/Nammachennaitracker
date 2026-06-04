@@ -40,7 +40,7 @@ async def scrape_dinamalar() -> List[Dict]:
                 return []
             
             # Keywords matching the traffic, rally, meeting and strike logic to avoid traffic
-            keywords = ["கூட்டம்", "பேரணி", "meeting", "rally", "தடை", "traffic", "மறியல்", "முடக்கம்", "strike", "தேரோட்டம்", "ஊர்வலம்"]
+            keywords = ["கூட்டம்", "பேரணி", "meeting", "rally", "தடை", "traffic", "மறியல்", "முடக்கம்", "strike"]
             
             # Chennai areas mapping for bilingual detection
             area_mapping = {
@@ -90,6 +90,8 @@ async def scrape_dinamalar() -> List[Dict]:
                             break
                     
                     found_party = next((party_keywords[k] for k in sorted_party_keys if k in text), "Other")
+                    if found_party == "Other":
+                        continue
                     
                     # Normalize slug to build absolute URL
                     source_url = URL
