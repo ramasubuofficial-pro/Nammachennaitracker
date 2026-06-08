@@ -245,5 +245,14 @@ dom.filterArea.addEventListener('change', filterAndRenderEvents);
 dom.searchPlace.addEventListener('input', filterAndRenderEvents);
 dom.filterDate.addEventListener('change', filterAndRenderEvents);
 
+// Blur search input when Enter is pressed
+dom.searchPlace.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        dom.searchPlace.blur();
+    }
+});
+
 // Initial Load
 fetchData();
+
