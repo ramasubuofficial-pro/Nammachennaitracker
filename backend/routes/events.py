@@ -20,6 +20,14 @@ def read_today_events(session: Session = Depends(get_session)):
     events = session.exec(select(Event).where(Event.end_time >= now)).all()
     return events
 
+@router.get("/upcoming", response_model=List[Event])
+def read_upcoming_events(session: Session = Depends(get_session)):
+    # Return all upcoming and future events
+    now = datetime.utcnow()
+    events = session.exec(select(Event).where(Event.end_time >= now)).all()
+    return events
+
+
 
 @router.get("/{id}", response_model=Event)
 def read_event(id: int, session: Session = Depends(get_session)):

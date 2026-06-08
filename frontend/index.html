@@ -50,15 +50,22 @@
         </section>
 
         <section class="events-section">
-            <div class="filter-bar glass" style="padding: 1rem; margin-bottom: 2rem; display: flex; gap: 1rem; align-items: center;">
-                <span style="font-weight: 600;">Filter by:</span>
-                <select id="filter-party" class="glass-select">
-                    <option value="all">All Parties</option>
-                </select>
-                <select id="filter-area" class="glass-select">
-                    <option value="all">All Areas</option>
-                </select>
+            <div class="filter-bar glass" style="padding: 1rem; margin-bottom: 2rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
+                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                    <span style="font-weight: 600;" id="label-filter-by">Filter by:</span>
+                    <select id="filter-party" class="glass-select">
+                        <option value="all" id="opt-all-parties">All Parties</option>
+                    </select>
+                    <select id="filter-area" class="glass-select">
+                        <option value="all" id="opt-all-areas">All Areas</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; flex-grow: 1; justify-content: flex-end; max-width: 500px; width: 100%;">
+                    <input type="text" id="search-place" class="glass-input" placeholder="Search by place..." style="flex-grow: 1; min-width: 180px;">
+                    <input type="date" id="filter-date" class="glass-input" style="min-width: 140px;">
+                </div>
             </div>
+
 
             <div class="events-grid" id="events-container">
                 <!-- Event cards will be injected here -->

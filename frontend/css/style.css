@@ -243,6 +243,34 @@ nav {
     color: white;
 }
 
+/* Glassmorphism Input styling */
+.glass-input {
+    background: var(--card-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.75rem;
+    outline: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.glass-input:focus, .glass-input:hover {
+    border-color: var(--accent);
+    background: rgba(30, 41, 59, 0.95);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+
+/* Custom calendar/date icon color in date input */
+.glass-input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+
 /* Event Cards */
 .events-grid {
     display: grid;
