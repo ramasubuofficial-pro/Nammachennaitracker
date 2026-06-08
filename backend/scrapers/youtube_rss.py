@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 from typing import List, Dict
 import asyncio
 import re
-from .utils import geocode_location
+from .utils import geocode_location, parse_date_from_text
+from datetime import timezone
 
 # Suppress HTML parser warning when parsing XML
 warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
@@ -59,8 +60,35 @@ async def scrape_channel_videos(party_name: str, channel_id: str, color: str) ->
                 
                 # Check for keywords and Chennai indicator
                 if any(k in text for k in keywords) and any(ind in text.lower() for ind in chennai_indicators):
+                    # Parse publication time
+                    pub_el = entry.find("published")
+                    pub_time = datetime.utcnow()
+                    if pub_el:
+                        try:
+                            pub_str = pub_el.get_text().strip()
+                            if pub_str.endswith('Z'):
+                                pub_str = pub_str[:-1] + '+00:00'
+                            pub_time = datetime.fromisoformat(pub_str).astimezone(timezone.utc).replace(tzinfo=None)
+                        except Exception as parse_err:
+                            print(f"Error parsing pub date: {parse_err}")
+                    
+                    # Try to parse explicit event date from title or description
+                    event_date = parse_date_from_text(text)
+                    
+                    # Filter out old events: if no explicit date and published > 24 hours ago, skip
+                    if not event_date and (datetime.utcnow() - pub_time) > timedelta(hours=24):
+                        continue
+                        
                     found_area = next((a for a in areas if a.lower() in text.lower()), "Chennai")
                     
+                    # Set start/end time
+                    if event_date:
+                        start_time = event_date
+                        end_time = event_date + timedelta(hours=3)
+                    else:
+                        start_time = pub_time
+                        end_time = pub_time + timedelta(hours=2)
+                        
                     event = {
                         "party_name": party_name,
                         "party_color": color,
@@ -69,8 +97,8 @@ async def scrape_channel_videos(party_name: str, channel_id: str, color: str) ->
                         "title_tamil": title[:100],
                         "location_name": found_area,
                         "location_tamil": found_area, 
-                        "start_time": datetime.utcnow() + timedelta(hours=2),
-                        "end_time": datetime.utcnow() + timedelta(hours=4),
+                        "start_time": start_time,
+                        "end_time": end_time,
                         "status": "confirmed",
                         "source_url": link or url,
                         "source_name": f"{party_name} YouTube"
@@ -80,6 +108,7 @@ async def scrape_channel_videos(party_name: str, channel_id: str, color: str) ->
                     if coords:
                         event["latitude"], event["longitude"] = coords
                         events.append(event)
+
     except Exception as e:
         print(f"YouTube RSS error for {party_name}: {e}")
         

@@ -1,11 +1,12 @@
 import httpx
 from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 import warnings
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+import email.utils
 from typing import List, Dict
 import asyncio
 import re
-from .utils import geocode_location
+from .utils import geocode_location, parse_date_from_text
 
 # Suppress HTML parser warning when parsing XML
 warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
@@ -38,7 +39,6 @@ async def scrape_ntk_website() -> List[Dict]:
                 link_el = item.find("link")
                 link = ""
                 if link_el:
-                    # sometimes link element in HTML parser wraps next sibling
                     link = link_el.get_text() or link_el.next_sibling
                     if link:
                         link = str(link).strip()
@@ -49,8 +49,32 @@ async def scrape_ntk_website() -> List[Dict]:
                 
                 # Check for keywords and Chennai context
                 if any(k in text for k in keywords) and any(ind in text.lower() for ind in chennai_indicators):
+                    # Parse publication date
+                    pub_el = item.find("pubdate")
+                    pub_time = datetime.utcnow()
+                    if pub_el:
+                        try:
+                            pub_time = email.utils.parsedate_to_datetime(pub_el.get_text()).astimezone(timezone.utc).replace(tzinfo=None)
+                        except Exception as parse_err:
+                            print(f"Error parsing pubDate: {parse_err}")
+                    
+                    # Search for explicit event date
+                    event_date = parse_date_from_text(text)
+                    
+                    # If no explicit event date and published > 48 hours ago, skip to avoid stale events
+                    if not event_date and (datetime.utcnow() - pub_time) > timedelta(hours=48):
+                        continue
+                        
                     found_area = next((a for a in areas if a.lower() in text.lower()), "Chennai")
                     
+                    # Set start/end times
+                    if event_date:
+                        start_time = event_date
+                        end_time = event_date + timedelta(hours=3)
+                    else:
+                        start_time = pub_time + timedelta(hours=24) # assume upcoming tomorrow if new
+                        end_time = pub_time + timedelta(hours=26)
+                        
                     event = {
                         "party_name": "NTK",
                         "party_color": "#ffa500",
@@ -59,8 +83,8 @@ async def scrape_ntk_website() -> List[Dict]:
                         "title_tamil": title[:100],
                         "location_name": found_area,
                         "location_tamil": found_area, 
-                        "start_time": datetime.utcnow() + timedelta(hours=24), # upcoming
-                        "end_time": datetime.utcnow() + timedelta(hours=26),
+                        "start_time": start_time,
+                        "end_time": end_time,
                         "status": "confirmed",
                         "source_url": link or url,
                         "source_name": "NTK Official Site"
@@ -111,8 +135,32 @@ async def scrape_aiadmk_website() -> List[Dict]:
                 text = f"{title} {desc}"
                 
                 if any(k in text for k in keywords) and any(ind in text.lower() for ind in chennai_indicators):
+                    # Parse publication date
+                    pub_el = item.find("pubdate")
+                    pub_time = datetime.utcnow()
+                    if pub_el:
+                        try:
+                            pub_time = email.utils.parsedate_to_datetime(pub_el.get_text()).astimezone(timezone.utc).replace(tzinfo=None)
+                        except Exception as parse_err:
+                            print(f"Error parsing pubDate: {parse_err}")
+                    
+                    # Search for explicit event date
+                    event_date = parse_date_from_text(text)
+                    
+                    # If no explicit event date and published > 48 hours ago, skip to avoid stale events
+                    if not event_date and (datetime.utcnow() - pub_time) > timedelta(hours=48):
+                        continue
+                        
                     found_area = next((a for a in areas if a.lower() in text.lower()), "Chennai")
                     
+                    # Set start/end times
+                    if event_date:
+                        start_time = event_date
+                        end_time = event_date + timedelta(hours=3)
+                    else:
+                        start_time = pub_time + timedelta(hours=24)
+                        end_time = pub_time + timedelta(hours=26)
+                        
                     event = {
                         "party_name": "AIADMK",
                         "party_color": "#008000",
@@ -121,8 +169,8 @@ async def scrape_aiadmk_website() -> List[Dict]:
                         "title_tamil": title[:100],
                         "location_name": found_area,
                         "location_tamil": found_area, 
-                        "start_time": datetime.utcnow() + timedelta(hours=24),
-                        "end_time": datetime.utcnow() + timedelta(hours=26),
+                        "start_time": start_time,
+                        "end_time": end_time,
                         "status": "confirmed",
                         "source_url": link or url,
                         "source_name": "AIADMK Official Site"
@@ -166,12 +214,27 @@ async def scrape_tvk_website() -> List[Dict]:
                 if len(text) > 15 and (any(k in text for k in keywords) or "events" in href or "announcements" in href):
                     is_chennai = any(ind in text.lower() for ind in chennai_indicators) or "chennai" in href.lower()
                     if is_chennai:
+                        # Try to parse explicit date
+                        event_date = parse_date_from_text(text)
+                        
+                        # If explicit date is found and it is older than 24 hours in the past, skip it
+                        if event_date and (datetime.utcnow() - event_date) > timedelta(hours=24):
+                            continue
+                            
                         found_area = next((a for a in areas if a.lower() in text.lower()), "Chennai")
                         
                         # Build absolute link
                         link = href
                         if href.startswith("/"):
                             link = f"https://tvkvijay.com{href}"
+                            
+                        # Set start/end times
+                        if event_date:
+                            start_time = event_date
+                            end_time = event_date + timedelta(hours=3)
+                        else:
+                            start_time = datetime.utcnow() + timedelta(hours=24)
+                            end_time = datetime.utcnow() + timedelta(hours=26)
                             
                         event = {
                             "party_name": "TVK",
@@ -181,8 +244,8 @@ async def scrape_tvk_website() -> List[Dict]:
                             "title_tamil": text[:100],
                             "location_name": found_area,
                             "location_tamil": found_area, 
-                            "start_time": datetime.utcnow() + timedelta(hours=24),
-                            "end_time": datetime.utcnow() + timedelta(hours=26),
+                            "start_time": start_time,
+                            "end_time": end_time,
                             "status": "unverified",
                             "source_url": link,
                             "source_name": "TVK Official Site"

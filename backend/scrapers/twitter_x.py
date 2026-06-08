@@ -1,11 +1,12 @@
 import httpx
 from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 import warnings
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+import email.utils
 from typing import List, Dict
 import asyncio
 import re
-from .utils import geocode_location
+from .utils import geocode_location, parse_date_from_text
 
 # Suppress HTML parser warning when parsing XML
 warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
@@ -91,8 +92,32 @@ async def scrape_twitter_account(party_name: str, handle: str, color: str) -> Li
             text = title
             
             if any(k in text for k in keywords) and any(ind in text.lower() for ind in chennai_indicators):
+                # Parse publication date
+                pub_el = item.find("pubdate")
+                pub_time = datetime.utcnow()
+                if pub_el:
+                    try:
+                        pub_time = email.utils.parsedate_to_datetime(pub_el.get_text()).astimezone(timezone.utc).replace(tzinfo=None)
+                    except Exception as parse_err:
+                        print(f"Error parsing pubDate: {parse_err}")
+                
+                # Search for explicit event date
+                event_date = parse_date_from_text(text)
+                
+                # If no explicit event date and tweet published > 24 hours ago, skip
+                if not event_date and (datetime.utcnow() - pub_time) > timedelta(hours=24):
+                    continue
+                    
                 found_area = next((a for a in areas if a.lower() in text.lower()), "Chennai")
                 
+                # Set start/end times
+                if event_date:
+                    start_time = event_date
+                    end_time = event_date + timedelta(hours=3)
+                else:
+                    start_time = pub_time
+                    end_time = pub_time + timedelta(hours=2)
+                    
                 event = {
                     "party_name": party_name,
                     "party_color": color,
@@ -101,8 +126,8 @@ async def scrape_twitter_account(party_name: str, handle: str, color: str) -> Li
                     "title_tamil": title[:100],
                     "location_name": found_area,
                     "location_tamil": found_area, 
-                    "start_time": datetime.utcnow() + timedelta(hours=6),
-                    "end_time": datetime.utcnow() + timedelta(hours=8),
+                    "start_time": start_time,
+                    "end_time": end_time,
                     "status": "unverified",
                     "source_url": link or f"https://x.com/{handle}",
                     "source_name": f"@{handle} Twitter"

@@ -11,11 +11,15 @@ def read_events(session: Session = Depends(get_session)):
     events = session.exec(select(Event)).all()
     return events
 
+from datetime import datetime
+
 @router.get("/today", response_model=List[Event])
 def read_today_events(session: Session = Depends(get_session)):
-    # In a real app, query by start_time
-    events = session.exec(select(Event)).all()
+    # Only return events that are active or upcoming (end_time is in the future)
+    now = datetime.utcnow()
+    events = session.exec(select(Event).where(Event.end_time >= now)).all()
     return events
+
 
 @router.get("/{id}", response_model=Event)
 def read_event(id: int, session: Session = Depends(get_session)):
