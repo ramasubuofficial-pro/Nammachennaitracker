@@ -8,14 +8,17 @@ router = APIRouter(prefix="/api/parties", tags=["Parties"])
 
 from ..models import Party, Event
 
+from datetime import datetime
+
 @router.get("/")
 def read_parties(session: Session = Depends(get_session)):
+    now = datetime.utcnow()
     parties = session.exec(select(Party)).all()
-    events = session.exec(select(Event)).all()
+    events = session.exec(select(Event).where(Event.end_time >= now)).all()
     
     party_list = []
     for p in parties:
-        # Simple count for today's events mapped to the party
+        # Simple count for active/upcoming events mapped to the party
         count = len([e for e in events if e.party_name == p.name])
         p_data = p.dict()
         p_data["event_count"] = count
